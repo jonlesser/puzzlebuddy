@@ -1,0 +1,24 @@
+application: puzzlebuddy
+version: 20130527220530
+runtime: python27
+api_version: 1
+threadsafe: yes
+default_expiration: "3600d"
+
+handlers:
+- url: /favicon\.ico
+  static_files: favicon.ico
+  upload: favicon\.ico
+
+- url: /static/(.*)
+  static_files: static/\1
+  upload: static/compiled/20130527220530/(.*)
+
+- url: .*
+  script: main.app
+
+libraries:
+- name: webapp2
+  version: latest
+- name: jinja2
+  version: latest

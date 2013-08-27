@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>HIInterval</title>
+    {% if dev %}
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css" />
+    {% else %}
+    <link rel="stylesheet" type="text/css" href="/static/compiled/20130527220530/main.css" />
+    {% endif %}
+    <script>
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-41265801-1']);
+      _gaq.push(['_trackPageview']);
+    </script>
+  </head>
+  <body>
+    {% if dev %}
+    <script src="/static/js/closure-library/closure/goog/base.js"></script>
+    <script src="/static/js/deps.js"></script>
+    <script>
+      goog.require('hii.Page');
+    </script>
+    {% else %}
+    <script src="/static/compiled/20130527220530/main.js"></script>
+    {% endif %}
+    <script>
+      var page = new hii.Page();
+      page.decorate(document.body);
+    </script>
+    <script type="text/javascript">
+      (function() {
+        var ga = document.createElement('script');
+        ga.type = 'text/javascript';
+        ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </body>
+</html>

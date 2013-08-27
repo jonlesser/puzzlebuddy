@@ -1,0 +1,3 @@
+[submodule "static/js/closure-library"]
+	path = static/js/closure-library
+	url = https://code.google.com/p/closure-library/
