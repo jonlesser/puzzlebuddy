@@ -1,0 +1,14 @@
+{% extends "main.html" %}
+{% block page_title %}Home{% endblock %}
+{% block body %}
+<form>
+  <input name="code" placeholder="Team Code" autofocus required>
+  <input type="submit" value="Go">
+</form>
+<p>
+  &mdash; or &mdash;
+</p>
+<p>
+  <a href="/hunt">Create a new hunt team</a>
+</p>
+{% endblock %}

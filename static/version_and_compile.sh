@@ -8,7 +8,7 @@ mkdir compiled/$DATE
 # Compile JS.
 python js/closure-library/closure/bin/build/closurebuilder.py \
   --root=js/ \
-  --namespace="hii.Page" \
+  --namespace="pb.Page" \
   --output_mode=compiled \
   --compiler_jar=js/closure-compiler/compiler.jar \
   --compiler_flags="--compilation_level=ADVANCED_OPTIMIZATIONS" \

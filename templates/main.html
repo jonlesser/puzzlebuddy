@@ -3,14 +3,15 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
-    <title>PuzzleBuddy</title>
+    <title>{% block page_title %}{% endblock%} / PuzzleBuddy</title>
     {% if dev %}
     <link rel="stylesheet" type="text/css" href="/static/css/main.css" />
     {% else %}
-    <link rel="stylesheet" type="text/css" href="/static/compiled/20131230024426/main.css" />
+    <link rel="stylesheet" type="text/css" href="/static/compiled/20131230031200/main.css" />
     {% endif %}
   </head>
   <body>
+    {% block body %}{% endblock %}
     {% if dev %}
       <script src="/static/js/closure-library/closure/goog/base.js"></script>
       <script src="/static/js/deps.js"></script>
@@ -18,7 +19,7 @@
         goog.require('pb.Page');
       </script>
     {% else %}
-      <script src="/static/compiled/20131230024426/main.js"></script>
+      <script src="/static/compiled/20131230031200/main.js"></script>
     {% endif %}
     <script>
       // Init page.

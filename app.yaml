@@ -1,5 +1,5 @@
 application: puzzlebuddy
-version: 20131230024426
+version: 20131230031200
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -13,12 +13,17 @@ handlers:
 
 - url: /static/(.*)
   static_files: static/\1
-  upload: static/compiled/20131230024426/(.*)
+  upload: static/compiled/20131230031200/(.*)
+  secure: always
+
+- url: /
+  script: main.app
   secure: always
 
 - url: .*
   script: main.app
   secure: always
+  login: required
 
 libraries:
 - name: webapp2
