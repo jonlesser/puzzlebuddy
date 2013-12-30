@@ -945,4 +945,4 @@ goog.addDependency('../../../closure-library/third_party/closure/goog/mochikit/a
 goog.addDependency('../../../closure-library/third_party/closure/goog/mochikit/async/deferredlist.js', ['goog.async.DeferredList'], ['goog.async.Deferred']);
 goog.addDependency('../../../closure-library/third_party/closure/goog/osapi/osapi.js', ['goog.osapi'], []);
 goog.addDependency('../../../closure-library/third_party/closure/goog/svgpan/svgpan.js', ['svgpan.SvgPan'], ['goog.Disposable', 'goog.events', 'goog.events.EventType', 'goog.events.MouseWheelHandler']);
-goog.addDependency('../../../main.js', ['hii.Page'], ['goog.dom', 'goog.ui.Component']);
+goog.addDependency('../../../main.js', ['pb.Page'], ['goog.dom', 'goog.ui.Component']);

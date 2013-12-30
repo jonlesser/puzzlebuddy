@@ -1,4 +1,4 @@
-goog.provide('hii.Page');
+goog.provide('pb.Page');
 
 goog.require('goog.dom');
 goog.require('goog.ui.Component');
@@ -10,26 +10,26 @@ goog.require('goog.ui.Component');
  * @constructor
  * @export
  */
-hii.Page = function(opt_domHelper) {
+pb.Page = function(opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
 };
-goog.inherits(hii.Page, goog.ui.Component);
+goog.inherits(pb.Page, goog.ui.Component);
 
 
 /**
  * @override
  */
-hii.Page.prototype.enterDocument = function() {
-  hii.Page.superClass_.enterDocument.call(this);
+pb.Page.prototype.enterDocument = function() {
+  pb.Page.superClass_.enterDocument.call(this);
 };
 
 
 /**
  * Override
  */
-hii.Page.prototype.disposeInternal = function() {
-  hii.Page.superClass_.disposeInternal.call(this);
+pb.Page.prototype.disposeInternal = function() {
+  pb.Page.superClass_.disposeInternal.call(this);
 };
 
-goog.exportProperty(hii.Page.prototype, 'decorate',
-    hii.Page.prototype.decorate);
+goog.exportProperty(pb.Page.prototype, 'decorate',
+    pb.Page.prototype.decorate);
