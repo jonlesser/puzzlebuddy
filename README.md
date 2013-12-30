@@ -1,4 +1,4 @@
-hiinterval
+Puzzle Buddy
 ==========
 
-HIInterval
+Puzzle Buddy
