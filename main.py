@@ -10,5 +10,6 @@ debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 app = webapp2.WSGIApplication([
   webapp2.Route(r'/', IndexHandler, name='index'),
   webapp2.Route(r'/hunts', HuntListHandler, name='hunt_list'),
-  webapp2.Route(r'/<hurl:[a-zA-Z1-9]{4,32}>', HuntDashboardHandler),
+  webapp2.Route(r'/<hurl:[a-zA-Z1-9]{4,32}>', HuntDashboardHandler,
+      name="hunt_dashboard"),
 ], debug=debug)

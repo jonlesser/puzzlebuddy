@@ -1,8 +1,8 @@
 {% extends "main.html" %}
 {% block page_title %}Home{% endblock %}
 {% block body %}
-<form>
-  <input name="code" placeholder="Team Code" autofocus required>
+<form method="post" action="{{form_action}}">
+  <input name="hurl" placeholder="Team Code" maxlength="32" autofocus required>
   <input type="submit" value="Go">
 </form>
 <p>
