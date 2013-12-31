@@ -20,6 +20,11 @@ handlers:
   script: main.app
   secure: always
 
+- url: /credentials
+  script: main.app
+  secure: always
+  login: admin
+
 - url: .*
   script: main.app
   secure: always

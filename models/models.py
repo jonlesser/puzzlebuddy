@@ -1,4 +1,12 @@
 from google.appengine.ext import ndb
+from oauth2client.appengine import CredentialsNDBProperty
+
+class CredentialsModel(ndb.Model):
+  credentials = CredentialsNDBProperty()
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  creator = ndb.UserProperty(auto_current_user_add=True)
+  modified = ndb.DateTimeProperty(auto_now=True)
+  modifier = ndb.UserProperty(auto_current_user=True)
 
 class Hunters(ndb.Model):
   created = ndb.DateTimeProperty(auto_now_add=True)
@@ -15,6 +23,7 @@ class Hunts(ndb.Model):
   name = ndb.StringProperty(required=True)
   rt_file_id = ndb.StringProperty(required=True)
   shared_folder_id = ndb.StringProperty(required=True)
+  hunters = ndb.UserProperty(repeated=True)
 
 class Puzzles(ndb.Model):
   created = ndb.DateTimeProperty(auto_now_add=True)

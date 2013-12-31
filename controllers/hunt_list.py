@@ -7,16 +7,13 @@ import webapp2
 
 from apiclient import discovery
 from google.appengine.api import users
-from models.models import Hunters
 from models.models import Hunts
-from oauth2client import file as oauth_file
+from models.models import CredentialsModel
+from oauth2client.appengine import StorageByKeyName
 
 
 class HuntListHandler(webapp2.RequestHandler):
   def get(self):
-    # Get a list of hunts associated with this user.
-    user = users.get_current_user()
-
     templates = jinja2.Environment(loader=jinja2.FileSystemLoader('templates'))
     template = templates.get_template('hunt_list.html')
     self.response.headers.add('X-UA-Compatible', 'IE=edge')
@@ -49,7 +46,8 @@ class HuntListHandler(webapp2.RequestHandler):
       return
 
     # Setup a service object to talk to the Drive API.
-    credentials = oauth_file.Storage('credentials.dat').get()
+    credentials = StorageByKeyName(
+        CredentialsModel, 'cred_key', 'credentials').get()
     if credentials is None or credentials.invalid:
       logging.error('Puzbud credentials failed to load or were invalid')
     http = credentials.authorize(http=httplib2.Http())
@@ -60,6 +58,7 @@ class HuntListHandler(webapp2.RequestHandler):
       'title': hurl,
       'mimeType': 'application/vnd.google-apps.folder',
     }
+    # TODO(jonlesser): Catch AccessTokenRefreshError exceptions when executing.
     doc = service.files().insert(body=body).execute()
     folder_id = doc['id']
 
@@ -88,6 +87,7 @@ class HuntListHandler(webapp2.RequestHandler):
     hunt_model.name = name
     hunt_model.rt_file_id = file_id
     hunt_model.shared_folder_id = folder_id
+    hunt_model.hunters = [user]
     hunt_model.put()
 
     # Direct the user the hunt dashboard
