@@ -13,6 +13,8 @@ class Hunts(ndb.Model):
   modified = ndb.DateTimeProperty(auto_now=True)
   modifier = ndb.UserProperty(auto_current_user=True)
   name = ndb.StringProperty(required=True)
+  rt_file_id = ndb.StringProperty(required=True)
+  shared_folder_id = ndb.StringProperty(required=True)
 
 class Puzzles(ndb.Model):
   created = ndb.DateTimeProperty(auto_now_add=True)
