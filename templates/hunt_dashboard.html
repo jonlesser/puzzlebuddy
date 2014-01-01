@@ -1,4 +1,13 @@
 {% extends "main.html" %}
 {% block body %}
-<h1>Hunt Dashboard ({{hurl}})</h1>
+<h1>Hunt Dashboard</h1>
+<script>
+var data = {
+  'hurl': '{{hurl}}',
+  'name': '{{name}}',
+  'rt_file_id': '{{rt_file_id}}',
+  'shared_folder_id': '{{shared_folder_id}}'
+};
+</script>
+
 {% endblock %}
