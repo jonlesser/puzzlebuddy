@@ -7,7 +7,7 @@
     {% if dev %}
     <link rel="stylesheet" type="text/css" href="/static/css/main.css" />
     {% else %}
-    <link rel="stylesheet" type="text/css" href="/static/compiled/20140102090113/main.css" />
+    <link rel="stylesheet" type="text/css" href="/static/compiled/20140102093013/main.css" />
     {% endif %}
   </head>
   <body>
@@ -19,7 +19,7 @@
         goog.require('pb.Page');
       </script>
     {% else %}
-      <script src="/static/compiled/20140102090113/main.js"></script>
+      <script src="/static/compiled/20140102093013/main.js"></script>
     {% endif %}
     <script>
       var JS_MODEL = {% block js_model_object %}{}{% endblock %};
@@ -28,11 +28,13 @@
       var page = new pb.Page('{% block js_page_type %}{% endblock %}');
       page.decorate(document.body);
 
-      // Init Google Analytics.
+    </script>
+    <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
       ga('create', 'UA-37441864-1', 'puzzlebuddy.appspot.com');
       ga('send', 'pageview');
     </script>

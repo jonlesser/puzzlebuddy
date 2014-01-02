@@ -7,13 +7,15 @@ mkdir compiled/$DATE
 
 # Compile JS.
 python js/closure-library/closure/bin/build/closurebuilder.py \
-  --root=js/ \
-  --namespace="pb.Page" \
-  --output_mode=compiled \
-  --compiler_jar=js/closure-compiler/compiler.jar \
   --compiler_flags="--compilation_level=ADVANCED_OPTIMIZATIONS" \
+  --compiler_flags="--externs=js/externs.js" \
   --compiler_flags="--generate_exports" \
-  --output_file=compiled/$DATE/main.js
+  --compiler_flags="--output_wrapper='(function() {%output%})();'"\
+  --compiler_jar=js/closure-compiler/compiler.jar \
+  --namespace="pb.Page" \
+  --output_file=compiled/$DATE/main.js \
+  --output_mode=compiled \
+  --root=js/
 
 # Compress Css.
 echo "Compressing CSS..."
