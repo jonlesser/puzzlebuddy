@@ -7,7 +7,7 @@
     {% if dev %}
     <link rel="stylesheet" type="text/css" href="/static/css/main.css" />
     {% else %}
-    <link rel="stylesheet" type="text/css" href="/static/compiled/20131230031200/main.css" />
+    <link rel="stylesheet" type="text/css" href="/static/compiled/20140102090113/main.css" />
     {% endif %}
   </head>
   <body>
@@ -19,11 +19,13 @@
         goog.require('pb.Page');
       </script>
     {% else %}
-      <script src="/static/compiled/20131230031200/main.js"></script>
+      <script src="/static/compiled/20140102090113/main.js"></script>
     {% endif %}
     <script>
+      var JS_MODEL = {% block js_model_object %}{}{% endblock %};
+
       // Init page.
-      var page = new pb.Page();
+      var page = new pb.Page('{% block js_page_type %}{% endblock %}');
       page.decorate(document.body);
 
       // Init Google Analytics.

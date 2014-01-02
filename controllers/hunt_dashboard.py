@@ -1,13 +1,15 @@
-import jinja2
 import httplib2
+import jinja2
 import json
 import logging
 import os
 import webapp2
 
-from models.models import Hunts
-from google.appengine.api import users
 from apiclient import discovery
+from google.appengine.api import users
+from models.models import Hunts
+from models.models import CredentialsModel
+from oauth2client.appengine import StorageByKeyName
 
 class HuntDashboardHandler(webapp2.RequestHandler):
   def get(self, hurl=None):
@@ -20,7 +22,7 @@ class HuntDashboardHandler(webapp2.RequestHandler):
       self.response.out.write('Hunt not found')
       return
 
-    # Check if the current user is in the hunters property. Add if not.
+    # Check if the current user is in the hunters property.
     hunter_found = False
     for hunter in hunt.hunters:
       if user.user_id() == hunter.user_id():
@@ -28,14 +30,35 @@ class HuntDashboardHandler(webapp2.RequestHandler):
         break
 
     if not hunter_found:
+      # Share hunt folder with user.
+      credentials = StorageByKeyName(
+          CredentialsModel, 'cred_key', 'credentials').get()
+      if credentials is None or credentials.invalid:
+        logging.error('Puzbud credentials failed to load or were invalid')
+      http = credentials.authorize(http=httplib2.Http())
+      service = discovery.build('drive', 'v2', http=http)
+      body = {
+        'value': user.email(),
+        'type': 'user',
+        'role': 'writer',
+      }
+      service.permissions().insert(fileId=hunt.shared_folder_id,
+                                   sendNotificationEmails=False,
+                                   body=body).execute()
+
+      # Add user to hunt model.
       hunt.hunters.append(user)
       hunt.put()
+
+    debug = os.environ["SERVER_SOFTWARE"].startswith('Development')
+    if self.request.get('nodebug'):
+      debug = False
 
     templates = jinja2.Environment(loader=jinja2.FileSystemLoader('templates'))
     template = templates.get_template('hunt_dashboard.html')
     self.response.headers.add('X-UA-Compatible', 'IE=edge')
     self.response.out.write(template.render({
-      'dev': os.environ["SERVER_SOFTWARE"].startswith('Development'),
+      'dev': debug,
       'hunt': hunt,
       'hurl': hunt.hurl,
       'name': hunt.name,

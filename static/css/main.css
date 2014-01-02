@@ -49,3 +49,21 @@ table {
 }
 
 /******** End of Reset ********/
+
+
+/******** pb.Authorize ********/
+.authorize {
+  display: none;
+}
+.authorize--show {
+  background-color: #666;
+  display: block;
+  height: 100%;
+  padding-top: 10%;
+  position: fixed;
+  text-align: center;
+  top: 0;
+  width: 100%;
+}
+
+
