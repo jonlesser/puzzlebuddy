@@ -67,9 +67,9 @@ pb.Authorize.prototype.enterDocument = function() {
   this.getHandler().listen(
       authBtn,
       goog.events.EventType.CLICK,
-      goog.partial(this.authorize_, false));
+      goog.bind(this.authorize, this, false));
 
-  gapi.load('auth:client', goog.bind(this.authorize_, this, true));
+  gapi.load('auth:client', goog.bind(this.authorize, this, true));
 };
 
 
@@ -78,7 +78,7 @@ pb.Authorize.prototype.enterDocument = function() {
  *     which means that the token is refreshed behind the scenes, and no UI is
  *     shown to the user.
  */
-pb.Authorize.prototype.authorize_ = function(immediate) {
+pb.Authorize.prototype.authorize = function(immediate) {
   gapi.auth.authorize({
     'client_id': pb.Authorize.CLIENT_ID_,
     'scope': pb.Authorize.CLIENT_SCOPES_,
@@ -89,11 +89,12 @@ pb.Authorize.prototype.authorize_ = function(immediate) {
 
 /**
  * @param {Object} authResult The result passed by gapi.auth.authorize.
+ * @private
  */
 pb.Authorize.prototype.authorizeCallback_ = function(authResult) {
   this.lastAuthResult_ = authResult;
   if (!authResult || authResult.error) {
-    this.setVisible(true);
+    this.setVisible_(true);
     return;
   }
 
@@ -101,19 +102,20 @@ pb.Authorize.prototype.authorizeCallback_ = function(authResult) {
   if (authResult.expires_in) {
     clearTimeout(this.timeoutId_);
     this.timeoutId_ = setTimeout(
-        goog.bind(this.authorize_, this, true),
+        goog.bind(this.authorize, this, true),
         authResult.expires_in * .9 * 1000);
   }
 
   this.dispatchEvent(pb.AuthorizeEventType.AUTHORIZED);
-  this.setVisible(false);
+  this.setVisible_(false);
 };
 
 
 /**
  * @param {boolean} visible True to show or false to hide.
+ * @private
  */
-pb.Authorize.prototype.setVisible = function(visible) {
+pb.Authorize.prototype.setVisible_ = function(visible) {
   goog.dom.classlist.enable(
       this.getElement(), pb.Authorize.Class_.SHOW, visible);
 };
