@@ -3,6 +3,7 @@ goog.provide('pb.HuntDashboard');
 goog.require('goog.dom');
 goog.require('goog.ui.Component');
 goog.require('pb.Authorize');
+goog.require('pb.Messages');
 
 
 
@@ -12,6 +13,11 @@ goog.require('pb.Authorize');
  */
 pb.HuntDashboard = function(opt_domHelper) {
   goog.base(this, opt_domHelper);
+
+  /**
+   * @private {gapi.drive.realtime.Document}
+   */
+  this.doc_;
 };
 goog.inherits(pb.HuntDashboard, goog.ui.Component);
 
@@ -50,7 +56,27 @@ pb.HuntDashboard.prototype.loadDoc_ = function() {
  * @private
  */
 pb.HuntDashboard.prototype.fileLoadHandler_ = function(doc) {
-  console.log(doc);
+  this.doc_ = doc;
+  // Temp hack until this stabalizes.
+  this.fileInitializeHandler_(doc.getModel());
+
+  var root = doc.getModel().getRoot();
+
+//  var hunters = new pb.Hunters(root.get('hunters'), doc);
+//  hunters.setId('hunters');
+//  this.addChild(hunters);
+//  hunters.decorate(this.getElementByClass('hunters'));
+
+  var messages = new pb.Messages(root.get('messages'), doc);
+  messages.setId('messages');
+  this.addChild(messages);
+  messages.decorate(this.getElementByClass('messages'));
+
+//
+//  var puzzles = new pb.Puzzles(root.get('puzzles'), doc);
+//  messages.setId('puzzles');
+//  this.addChild(puzzles);
+//  puzzles.decorate(this.getElementByClass('puzzles'));
 };
 
 
@@ -85,12 +111,12 @@ pb.HuntDashboard.prototype.fileLoadHandler_ = function(doc) {
  *              'displayName': string
  *  - collaborativeList: 'messages'
  *    - collaborativeMap:
- *        'subject': collaborativeString
- *        'message': collaborativeString
- *        'modified': Date
- *        'modifier': string
+ *        'message': string
+ *        'timestamp': Date
+ *        'userId': string
  *  - collaborativeList: 'hunters'
  *    - collaborativeMap:
+ *        'active': boolean
  *        'timestamp': Date
  *        'userId': string
  *        'photoUrl': string
@@ -100,7 +126,16 @@ pb.HuntDashboard.prototype.fileLoadHandler_ = function(doc) {
  * @private
  */
 pb.HuntDashboard.prototype.fileInitializeHandler_ = function(model) {
-  console.log(model)
+  var root = model.getRoot();
+  if (!root.get('hunters')) {
+    root.set('hunters', model.createList());
+  }
+  if (!root.get('messages')) {
+    root.set('messages', model.createList());
+  }
+  if (!root.get('puzzles')) {
+    root.set('puzzles', model.createList());
+  }
 };
 
 

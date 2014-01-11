@@ -946,7 +946,8 @@ goog.addDependency('../../../closure-library/third_party/closure/goog/mochikit/a
 goog.addDependency('../../../closure-library/third_party/closure/goog/mochikit/async/deferredlist.js', ['goog.async.DeferredList'], ['goog.async.Deferred']);
 goog.addDependency('../../../closure-library/third_party/closure/goog/osapi/osapi.js', ['goog.osapi'], []);
 goog.addDependency('../../../closure-library/third_party/closure/goog/svgpan/svgpan.js', ['svgpan.SvgPan'], ['goog.Disposable', 'goog.events', 'goog.events.EventType', 'goog.events.MouseWheelHandler']);
-goog.addDependency('../../../hunt_dashboard.js', ['pb.HuntDashboard'], ['goog.dom', 'goog.ui.Component', 'pb.Authorize']);
+goog.addDependency('../../../hunt_dashboard.js', ['pb.HuntDashboard'], ['goog.dom', 'goog.ui.Component', 'pb.Authorize', 'pb.Messages']);
 goog.addDependency('../../../hunt_list.js', ['pb.HuntList'], ['goog.dom', 'goog.ui.Component']);
 goog.addDependency('../../../index.js', ['pb.Index'], ['goog.dom', 'goog.ui.Component']);
 goog.addDependency('../../../main.js', ['pb.Page'], ['goog.dom', 'goog.ui.Component', 'pb.HuntDashboard', 'pb.HuntList', 'pb.Index']);
+goog.addDependency('../../../messages.js', ['pb.Messages'], ['goog.dom', 'goog.events.EventType', 'goog.ui.Component']);
