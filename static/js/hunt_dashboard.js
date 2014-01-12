@@ -3,6 +3,7 @@ goog.provide('pb.HuntDashboard');
 goog.require('goog.dom');
 goog.require('goog.ui.Component');
 goog.require('pb.Authorize');
+goog.require('pb.CollaboratorStorage');
 goog.require('pb.Messages');
 
 
@@ -62,6 +63,10 @@ pb.HuntDashboard.prototype.fileLoadHandler_ = function(doc) {
 
   var root = doc.getModel().getRoot();
 
+  // Get active collaborators.
+  var collaborators = pb.CollaboratorStorage.getInstance();
+  collaborators.init(root.get('collaborators'), doc);
+
 //  var hunters = new pb.Hunters(root.get('hunters'), doc);
 //  hunters.setId('hunters');
 //  this.addChild(hunters);
@@ -104,18 +109,16 @@ pb.HuntDashboard.prototype.fileLoadHandler_ = function(doc) {
  *        'modifier': string
  *        'answer': collaborativeString
  *        'hunters': collaborativeList
- *          - collaborativeMap:
- *              'timestamp': Date
- *              'userId': string
- *              'photoUrl': string
- *              'displayName': string
+ *          'userId': string
  *  - collaborativeList: 'messages'
- *    - collaborativeMap:
+ *    - Object:
  *        'message': string
  *        'timestamp': Date
  *        'userId': string
  *  - collaborativeList: 'hunters'
- *    - collaborativeMap:
+ *    - string 'userID':
+ *  - collaborativeMap: 'collaborators'
+ *    - 'userId': collaborativeMap:
  *        'active': boolean
  *        'timestamp': Date
  *        'userId': string
@@ -127,6 +130,9 @@ pb.HuntDashboard.prototype.fileLoadHandler_ = function(doc) {
  */
 pb.HuntDashboard.prototype.fileInitializeHandler_ = function(model) {
   var root = model.getRoot();
+  if (!root.get('collaborators')) {
+    root.set('collaborators', model.createMap());
+  }
   if (!root.get('hunters')) {
     root.set('hunters', model.createList());
   }
