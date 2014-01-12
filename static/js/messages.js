@@ -13,8 +13,14 @@ goog.require('goog.ui.Component');
  */
 pb.Messages = function(messageList, doc) {
   goog.base(this);
-
+  /**
+   * @private {gapi.drive.realtime.CollaborativeList} messageList Messages list.
+   */
   this.messageList_ = messageList;
+
+  /**
+   * @private {gapi.drive.realtime.Document} doc The realtime document.
+   */
   this.doc_ = doc;
 };
 goog.inherits(pb.Messages, goog.ui.Component);
@@ -117,5 +123,6 @@ pb.Messages.prototype.disposeInternal = function() {
       goog.bind(this.valueAddedHandler_, this));
 
   this.doc_ = null;
+  this.messageList_ = null;
   goog.base(this, 'disposeInternal');
 };

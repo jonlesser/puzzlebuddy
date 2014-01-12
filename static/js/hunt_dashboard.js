@@ -4,6 +4,7 @@ goog.require('goog.dom');
 goog.require('goog.ui.Component');
 goog.require('pb.Authorize');
 goog.require('pb.CollaboratorStorage');
+goog.require('pb.Collaborators');
 goog.require('pb.Messages');
 
 
@@ -64,13 +65,13 @@ pb.HuntDashboard.prototype.fileLoadHandler_ = function(doc) {
   var root = doc.getModel().getRoot();
 
   // Get active collaborators.
-  var collaborators = pb.CollaboratorStorage.getInstance();
-  collaborators.init(root.get('collaborators'), doc);
+  var collaboratorStorage = pb.CollaboratorStorage.getInstance();
+  collaboratorStorage.init(root.get('collaborators'), doc);
 
-//  var hunters = new pb.Hunters(root.get('hunters'), doc);
-//  hunters.setId('hunters');
-//  this.addChild(hunters);
-//  hunters.decorate(this.getElementByClass('hunters'));
+  var collaborators = new pb.Collaborators(root.get('collaborators'), doc);
+  collaborators.setId('collaborators');
+  this.addChild(collaborators);
+  collaborators.decorate(this.getElementByClass('collaborators'));
 
   var messages = new pb.Messages(root.get('messages'), doc);
   messages.setId('messages');
@@ -115,8 +116,6 @@ pb.HuntDashboard.prototype.fileLoadHandler_ = function(doc) {
  *        'message': string
  *        'timestamp': Date
  *        'userId': string
- *  - collaborativeList: 'hunters'
- *    - string 'userID':
  *  - collaborativeMap: 'collaborators'
  *    - 'userId': collaborativeMap:
  *        'active': boolean
@@ -132,9 +131,6 @@ pb.HuntDashboard.prototype.fileInitializeHandler_ = function(model) {
   var root = model.getRoot();
   if (!root.get('collaborators')) {
     root.set('collaborators', model.createMap());
-  }
-  if (!root.get('hunters')) {
-    root.set('hunters', model.createList());
   }
   if (!root.get('messages')) {
     root.set('messages', model.createList());

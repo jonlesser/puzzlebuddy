@@ -1,141 +1,112 @@
-goog.provide('pb.CollaboratorStorage');
+goog.provide('pb.Collaborators');
 
-goog.require('goog.Disposable');
+goog.require('goog.dom');
+goog.require('goog.dom.classlist');
+goog.require('goog.ui.Component');
 
 
 
 /**
- * Manages a map of all collaborators past and present. Collaborators are keyed
- * by userId.
- *
+ * @param {gapi.drive.realtime.CollaborativeMap} collaboratorMap Collaborators.
+ * @param {gapi.drive.realtime.Document} doc The realtime document.
  * @constructor
  */
-pb.CollaboratorStorage = function() {
+pb.Collaborators = function(collaboratorMap, doc) {
   goog.base(this);
   /**
-   * @private {gapi.drive.realtime.Document}
+   * @private {gapi.drive.realtime.CollaborativeMap} collaboratorMap Peeps.
    */
-  this.doc_;
+  this.collaboratorMap_ = collaboratorMap;
 
   /**
-   * @private {gapi.drive.realtime.CollaborativeMap}
+   * @private {gapi.drive.realtime.Document} doc The realtime document.
    */
-  this.collaboratorsMap_;
+  this.doc_ = doc;
 };
-goog.inherits(pb.CollaboratorStorage, goog.Disposable);
-goog.addSingletonGetter(pb.CollaboratorStorage);
+goog.inherits(pb.Collaborators, goog.ui.Component);
 
 
 /**
- * Manages a map of all collaborators past and present. Collaborators are keyed
- * by userId.
+ * CSS classes used by this module.
  *
- * @param {gapi.drive.realtime.CollaborativeMap} collaboratorsMap Map of all
- *     document collaborators past and present.
- * @param {gapi.drive.realtime.Document} doc The realtime document.
+ * @enum {string}
+ * @private
  */
-pb.CollaboratorStorage.prototype.init = function(collaboratorsMap, doc) {
-  this.doc_ = doc;
-  this.collaboratorsMap_ = collaboratorsMap;
+pb.Collaborators.Class_ = {
+  ACTIVE: 'collaborator--active',
+  BASE: 'collaborator',
+  LIST: 'collaborator-list'
+};
 
-  // Get the current collaborators and add them the map.
-  this.initCollaborators_(this.doc_.getCollaborators());
+
+/** @override */
+pb.Collaborators.prototype.enterDocument = function() {
+  goog.base(this, 'enterDocument');
+  // Add all the known collaborators.
+  var userIds = this.collaboratorMap_.keys();
+  var parentEl = this.getElementByClass(pb.Collaborators.Class_.LIST);
+  for (var i=0, userId; userId = userIds[i]; i++) {
+    this.addCollaboratorEl_(this.collaboratorMap_.get(userId), parentEl);
+  }
 
   // Listen for new collaborators.
-  this.doc_.addEventListener(
-      gapi.drive.realtime.EventType.COLLABORATOR_JOINED,
-      goog.bind(this.setActive_, this, true));
-
-  // Listen for collaborators leaving.
-  this.doc_.addEventListener(
-      gapi.drive.realtime.EventType.COLLABORATOR_LEFT,
-      goog.bind(this.setActive_, this, false));
-
+  this.collaboratorMap_.addEventListener(
+      gapi.drive.realtime.EventType.VALUE_CHANGED,
+      goog.bind(this.collaboratorAddedHander_, this));
 };
 
-
 /**
- * @param {Array.<gapi.drive.realtime.Collaborator>} collaborators Array of
- *     collaborators currently in the document.
+ * @param {gapi.drive.realtime.ValueChangedEvent} e The change event.
  */
-pb.CollaboratorStorage.prototype.initCollaborators_ = function(collaborators) {
-  for (var i=0, collaborator; collaborator = collaborators[i]; i++) {
-    var existingCollaborator = this.collaboratorsMap_.get(
-        collaborator.userId);
-
-    if (!existingCollaborator) {
-      var map = this.doc_.getModel().createMap();
-      map.set('active', true);
-      map.set('timestamp', new Date());
-      map.set('photoUrl', collaborator.photoUrl);
-      map.set('displayName', collaborator.displayName);
-      this.collaboratorsMap_.set(collaborator.userId, map);
-    } else if (!existingCollaborator.get('active')) {
-      existingCollaborator.set('active', true);
-    }
-  }
+pb.Collaborators.prototype.collaboratorAddedHander_ = function(e) {
+  var parentEl = this.getElementByClass(pb.Collaborators.Class_.LIST);
+  this.addCollaboratorEl_(e.newValue, parentEl);
 };
 
 
 /**
- * Updates the 'active' property of a collaborator when they join or leave the
- * doc. Note: This is not very efficient because every time a user joins or
- * leaves, all active users will report the change in state.
+ * Updates the collaborator element with changes to the collaborator map.
+ * Currently only supports updating the active class.
  *
- * @param {boolean} newActiveState State to set on collaborator.
- * @param {gapi.drive.realtime.CollaboratorJoinedEvent|
- *     gapi.drive.realtime.CollaboratorLeftEvent} e The event.
+ * @param {Element} el The element associated with this collaborator.
+ * @param {gapi.drive.realtime.ValueChangedEvent} e The changed property event.
  */
-pb.CollaboratorStorage.prototype.setActive_ = function(newActiveState, e) {
-  var userId = e.collaborator.userId;
-  var collaborator = this.collaboratorsMap_.get(userId);
-
-  // If the user is leaving, make sure they don't have another session before
-  // marking them as not active.
-  if (newActiveState === false && this.userHasActiveSession_(userId)) {
-    return;
-  }
-
-  if (collaborator.get('active') !== newActiveState) {
-    collaborator.set('active', newActiveState);
+pb.Collaborators.prototype.collaboratorUpdatedHander_ = function(el, e) {
+  if (e.property === 'active') {
+    goog.dom.classlist.enable(el, pb.Collaborators.Class_.ACTIVE, e.newValue);
   }
 };
 
 
 /**
- * Checks if a given userId is currently an active collaborator. This is used
- * to ensure that collaborators aren't marked as inactive when close one of
- * potentially several sessions.
- *
- * @param {string} userId The userId to check.
- * @return {boolean}
+ * @param {gapi.drive.realtime.CollaborativeMap} collaborator Colaborator Map.
+ * @param {Element} parentEl The element to append to.
  */
-pb.CollaboratorStorage.prototype.userHasActiveSession_ = function(userId) {
-  var active = false;
-  var collaborators = this.doc_.getCollaborators();
-  for (var i=0, collaborator; collaborator = collaborators[i]; i++) {
-    if (userId === collaborator.userId) {
-      active = true;
-      break;
-    }
+pb.Collaborators.prototype.addCollaboratorEl_ = function(collaborator,
+    parentEl) {
+  var el = goog.dom.createDom('div', pb.Collaborators.Class_.BASE);
+  if (collaborator.get('active')) {
+    goog.dom.classlist.add(el, pb.Collaborators.Class_.ACTIVE);
   }
-  return active;
-}
+
+  // Set content with name and picture.
+  goog.dom.setTextContent(el, collaborator.get('displayName'));
+  var imgEl = goog.dom.createDom('img');
+  imgEl.src = collaborator.get('photoUrl');
+  el.appendChild(imgEl);
+
+  // Listen for collaborator changes and update element.
+  collaborator.addEventListener(
+      gapi.drive.realtime.EventType.VALUE_CHANGED,
+      goog.bind(this.collaboratorUpdatedHander_, this, el));
+
+  parentEl.appendChild(el);
+};
 
 
 /** Override */
-pb.CollaboratorStorage.prototype.disposeInternal = function() {
-
-  // TODO(jonlesser): I don't think it's right to remove with a new bind.
-  this.doc_.removeEventListener(
-      gapi.drive.realtime.EventType.COLLABORATOR_JOINED,
-      goog.bind(this.setActive_, this, true));
-
-  this.doc_.removeEventListener(
-      gapi.drive.realtime.EventType.COLLABORATOR_LEFT,
-      goog.bind(this.setActive_, this, false));
-
+pb.Collaborators.prototype.disposeInternal = function() {
   this.doc_ = null;
-  this.collaboratorsMap_ = null;
+  this.collaboratorMap_ = null;
   goog.base(this, 'disposeInternal');
 };
