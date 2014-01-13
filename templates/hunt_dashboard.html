@@ -1,23 +1,46 @@
 {% extends "main.html" %}
 {% block body %}
-<h1>Hunt Dashboard</h1>
-<script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
-
-<section class="collaborators">
-  <div class="collaborator-list"></div>
-</section>
-<section class="messages">
-  <div class="message-list"></div>
-  <form class="message-form">
-    <textarea name="msg" class="message-textarea"></textarea>
-    <input type="submit" value="Post Message">
-  </form>
+<h1 class="title">{{ name }}</h1>
+<section class="section-wrapper">
+  <section class="section section--puzzles">
+    <header>
+      <h2>Puzzles</h2>
+      <form class="search-form search-form--puzzles">
+        <input class="search-input" placeholder="Search Puzzles">
+      </form>
+    </header>
+    <section class="puzzle-list"></section>
+  </section>
+  <section class="section section--messages">
+    <header>
+      <h2>Messages</h2>
+      <form class="search-form search-form--messages">
+        <input class="search-input" placeholder="Search Messages">
+      </form>
+    </header>
+    <section class="message-list"></section>
+    <footer>
+      <form class="message-form">
+        <input name="msg" class="message-compose" placeholder="Add a message...">
+      </form>
+    </footer>
+  </section>
+  <section class="section section--collaborators">
+    <header>
+      <h2>Team</h2>
+      <form class="search-form search-form--collaborators">
+        <input class="search-input" placeholder="Search Team">
+      </form>
+    </header>
+    <section class="collaborator-list"></section>
+  </section>
 </section>
 
 <div class="authorize">
   <button class="auth-button">Click to Authorize</button>
 </div>
 
+<script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
 {% endblock %}
 {% block js_page_type %}hunt_dashboard{% endblock %}
 {% block js_model_object %}

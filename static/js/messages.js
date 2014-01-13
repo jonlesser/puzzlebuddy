@@ -34,7 +34,7 @@ goog.inherits(pb.Messages, goog.ui.Component);
  */
 pb.Messages.Class_ = {
   FORM: 'message-form',
-  TEXTAREA: 'message-textarea',
+  COMPOSED_INPUT: 'message-compose',
   LIST: 'message-list'
 };
 
@@ -57,7 +57,7 @@ pb.Messages.prototype.enterDocument = function() {
   this.getHandler().listen(
       this.getElementByClass(pb.Messages.Class_.FORM),
       goog.events.EventType.SUBMIT,
-      this.composeMessageHandler_);
+      goog.bind(this.composeMessageHandler_, this));
 };
 
 
@@ -88,6 +88,7 @@ pb.Messages.prototype.addMessageEl_ = function(messages, index) {
         msg['timestamp'],
         msg['userId']].join('*'));
     goog.dom.insertChildAt(msgsEl, el, index + i)
+    msgsEl.scrollTop = msgsEl.scrollHeight;
   }
 };
 
@@ -101,10 +102,9 @@ pb.Messages.prototype.addMessageEl_ = function(messages, index) {
 pb.Messages.prototype.composeMessageHandler_ = function(e) {
   e.preventDefault();
 
-  var textarea = goog.dom.getElementByClass(
-      pb.Messages.Class_.TEXTAREA, e.target);
+  var composedInput = this.getElementByClass(pb.Messages.Class_.COMPOSED_INPUT);
   var msg = {
-    'message': textarea.value,
+    'message': composedInput.value,
     'timestamp': new Date(),
     // TODO(jonlesser): Set actual userId.
     'userId': 123
@@ -112,7 +112,7 @@ pb.Messages.prototype.composeMessageHandler_ = function(e) {
 
   this.messageList_.push(msg);
 
-  textarea.value = '';
+  composedInput.value = '';
 };
 
 

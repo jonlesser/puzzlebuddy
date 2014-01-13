@@ -24,6 +24,19 @@ pb.HuntDashboard = function(opt_domHelper) {
 goog.inherits(pb.HuntDashboard, goog.ui.Component);
 
 
+/**
+ * CSS classes used by this module.
+ *
+ * @enum {string}
+ * @private
+ */
+pb.HuntDashboard.Class_ = {
+  PUZZLES: 'section--puzzles',
+  MESSAGES: 'section--messages',
+  COLLABORATORS: 'section--collaborators'
+};
+
+
 /** @override */
 pb.HuntDashboard.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
@@ -64,25 +77,26 @@ pb.HuntDashboard.prototype.fileLoadHandler_ = function(doc) {
 
   var root = doc.getModel().getRoot();
 
-  // Get active collaborators.
+  // TODO: Doesn't need to be a singleton now.
   var collaboratorStorage = pb.CollaboratorStorage.getInstance();
   collaboratorStorage.init(root.get('collaborators'), doc);
 
   var collaborators = new pb.Collaborators(root.get('collaborators'), doc);
   collaborators.setId('collaborators');
   this.addChild(collaborators);
-  collaborators.decorate(this.getElementByClass('collaborators'));
+  collaborators.decorate(
+      this.getElementByClass(pb.HuntDashboard.Class_.COLLABORATORS));
 
   var messages = new pb.Messages(root.get('messages'), doc);
   messages.setId('messages');
   this.addChild(messages);
-  messages.decorate(this.getElementByClass('messages'));
+  messages.decorate(this.getElementByClass(pb.HuntDashboard.Class_.MESSAGES));
 
-//
+
 //  var puzzles = new pb.Puzzles(root.get('puzzles'), doc);
-//  messages.setId('puzzles');
+//  puzzles.setId('puzzles');
 //  this.addChild(puzzles);
-//  puzzles.decorate(this.getElementByClass('puzzles'));
+//  puzzles.decorate(this.getElementByClass(pb.HuntDashboard.Class_.PUZZLES));
 };
 
 
@@ -116,6 +130,7 @@ pb.HuntDashboard.prototype.fileLoadHandler_ = function(doc) {
  *        'message': string
  *        'timestamp': Date
  *        'userId': string
+ *        'pinned': boolean
  *  - collaborativeMap: 'collaborators'
  *    - 'userId': collaborativeMap:
  *        'active': boolean
