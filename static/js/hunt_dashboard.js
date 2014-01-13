@@ -6,15 +6,15 @@ goog.require('pb.Authorize');
 goog.require('pb.CollaboratorStorage');
 goog.require('pb.Collaborators');
 goog.require('pb.Messages');
+goog.require('pb.Puzzles');
 
 
 
 /**
- * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper.
  * @constructor
  */
-pb.HuntDashboard = function(opt_domHelper) {
-  goog.base(this, opt_domHelper);
+pb.HuntDashboard = function() {
+  goog.base(this);
 
   /**
    * @private {gapi.drive.realtime.Document}
@@ -31,16 +31,15 @@ goog.inherits(pb.HuntDashboard, goog.ui.Component);
  * @private
  */
 pb.HuntDashboard.Class_ = {
-  PUZZLES: 'section--puzzles',
+  COLLABORATORS: 'section--collaborators',
   MESSAGES: 'section--messages',
-  COLLABORATORS: 'section--collaborators'
+  PUZZLES: 'section--puzzles'
 };
 
 
 /** @override */
 pb.HuntDashboard.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
-
 
   var auth = new pb.Authorize();
   auth.setId('authorize');
@@ -92,11 +91,10 @@ pb.HuntDashboard.prototype.fileLoadHandler_ = function(doc) {
   this.addChild(messages);
   messages.decorate(this.getElementByClass(pb.HuntDashboard.Class_.MESSAGES));
 
-
-//  var puzzles = new pb.Puzzles(root.get('puzzles'), doc);
-//  puzzles.setId('puzzles');
-//  this.addChild(puzzles);
-//  puzzles.decorate(this.getElementByClass(pb.HuntDashboard.Class_.PUZZLES));
+  var puzzles = new pb.Puzzles(root.get('puzzles'), doc);
+  puzzles.setId('puzzles');
+  this.addChild(puzzles);
+  puzzles.decorate(this.getElementByClass(pb.HuntDashboard.Class_.PUZZLES));
 };
 
 
