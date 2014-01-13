@@ -21,6 +21,7 @@ python js/closure-library/closure/bin/build/closurebuilder.py \
 echo "Compressing CSS..."
 java -jar css/closure-stylesheets.jar \
   --output-file compiled/$DATE/main.css \
+  css/normalize.css \
   css/main.css
 
 # Update the css and js links and the app version.
