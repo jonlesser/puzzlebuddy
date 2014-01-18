@@ -3,6 +3,7 @@ import jinja2
 import json
 import logging
 import os
+import re
 import webapp2
 
 from apiclient import discovery
@@ -12,6 +13,56 @@ from models.models import CredentialsModel
 from oauth2client.appengine import StorageByKeyName
 
 class HuntDashboardHandler(webapp2.RequestHandler):
+  def CheckHunterInHunt(self, user, hunt):
+    hunter_found = False
+    for hunter in hunt.hunters:
+      if user.user_id() == hunter.user_id():
+        hunter_found = True
+        break
+    return hunter_found
+
+  def post(self, hurl=None):
+    user = users.get_current_user()
+    hunt = Hunts.query(Hunts.hurl == hurl).get()
+    title = self.request.get('title', None)
+
+    if not hunt:
+      logging.error('Hunt not found')
+      self.response(400)
+      return
+
+    # User must be in the current hunt to create docs.
+    if not self.CheckHunterInHunt(user, hunt):
+      logging.error('User not in hunt.')
+      self.error(403)
+      return
+
+    # Validate title
+    if re.match(r'^[\w\s]{1,128}$', title) == None:
+      logging.error('Invalid doc title')
+      self.error(400)
+      return
+
+    # Setup a service object to talk to the Drive API.
+    credentials = StorageByKeyName(
+        CredentialsModel, 'cred_key', 'credentials').get()
+    if credentials is None or credentials.invalid:
+      logging.error('Puzbud credentials failed to load or were invalid')
+    http = credentials.authorize(http=httplib2.Http())
+    service = discovery.build('drive', 'v2', http=http)
+
+    # Create a new doc.
+    body = {
+      'title': title,
+      'mimeType': 'application/vnd.google-apps.spreadsheet',
+      'parents': [{'id': hunt.shared_folder_id}],
+    }
+    # TODO(jonlesser): Catch AccessTokenRefreshError exceptions when executing.
+    doc = service.files().insert(body=body).execute()
+
+    resp = {'file_id': doc['id']}
+    self.response.out.write(json.dumps(resp))
+
   def get(self, hurl=None):
     user = users.get_current_user()
     hunt = Hunts.query(Hunts.hurl == hurl).get()
@@ -22,14 +73,7 @@ class HuntDashboardHandler(webapp2.RequestHandler):
       self.response.out.write('Hunt not found')
       return
 
-    # Check if the current user is in the hunters property.
-    hunter_found = False
-    for hunter in hunt.hunters:
-      if user.user_id() == hunter.user_id():
-        hunter_found = True
-        break
-
-    if not hunter_found:
+    if not self.CheckHunterInHunt(user, hunt):
       # Share hunt folder with user.
       credentials = StorageByKeyName(
           CredentialsModel, 'cred_key', 'credentials').get()
