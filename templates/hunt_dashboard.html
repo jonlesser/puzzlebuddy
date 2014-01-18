@@ -10,24 +10,35 @@
       </form>
     </header>
     <section class="puzzle-list">
-      <div>
+      <div class="puzzle puzzle--expanded">
         <textarea class="name">The Butter End.</textarea>
-        <textarea class="url">https://hunt.org/foo</textarea>
-        <textarea class="answer">Answer</textarea>
-        <textarea class="notes">Notes</textarea>
-        <ul>
-          <li><a href="#">Google Doc</a>
-        </ul>
-        <button class="add">Add doc</button>
-        <button class="delete">Delete</button>
-        <ul>
-          <li>hunter 1
-          <li>hunter 2
-        </ul>
-        <button class="addhunter">I'm working on this</button>
-        <div class="needshelp">help</div>
-        <div class="solved">solved</div>
-        <div>Created 1/15/2015 at 14:59</div>
+        <label class="status">
+          <select>
+            <option>New</option>
+            <option>Underway</option>
+            <option>Needs Help</option>
+            <option>Solved</option>
+          </select>
+        </label>
+        <div class="hunters">
+          Hunters: <span>2</span>
+        </div>
+        <div class="puzzle-details">
+          <textarea class="url">https://hunt.org/foo</textarea>
+          <textarea class="answer">Answer</textarea>
+          <textarea class="notes">Notes</textarea>
+          <ul>
+            <li><a href="#">Google Doc</a>
+          </ul>
+          <button class="add">Add doc</button>
+          <button class="delete">Delete</button>
+          <ul>
+            <li>hunter 1
+            <li>hunter 2
+          </ul>
+          <button class="addhunter">I'm working on this</button>
+          <div>Created 1/15/2015 at 14:59</div>
+        </div>
       </div>
     </section>
     <footer>
