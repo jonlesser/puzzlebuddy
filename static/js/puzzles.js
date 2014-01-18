@@ -112,7 +112,6 @@ pb.Puzzles.prototype.createNewPuzzleMap_ = function() {
   var map = this.doc_.getModel().createMap();
   map.set('answer', this.doc_.getModel().createString());
   map.set('created', new Date());
-  map.set('creator', this.doc_.getModel().createString());
   map.set('deleted', false);
   map.set('docs', this.doc_.getModel().createList());
   map.set('hunters', this.doc_.getModel().createList());
