@@ -82,11 +82,28 @@ pb.Puzzles.prototype.valueAddedHandler_ = function(e) {
  */
 pb.Puzzles.prototype.addPuzzleEl_ = function(puzzleMap, index) {
   var listEl = this.getElementByClass(pb.Puzzles.Class_.LIST);
-  var el = goog.dom.createDom('div');
-  // TODO(jonlesser): Lots of dom to create here...
-  goog.dom.insertChildAt(listEl, el, index)
+  var el = this.createPuzzleDom_();
 
-  listEl.scrollTop = listEl.scrollHeight;
+  // Listen for clicks on the section and expand on click.
+  this.getHandler().listen(
+      goog.dom.getFirstElementChild(el),
+      goog.events.EventType.CLICK,
+      goog.bind(this.expandPuzzleHandler_, this));
+
+  // Insert the puzzle and scroll to the top.
+  goog.dom.insertChildAt(listEl, el, index);
+  listEl.scrollTop = 0;
+};
+
+
+/**
+ * Handles clicks on the puzzle element header.
+ *
+ * @param {goog.events.Event} e The click event.
+ * @private
+ */
+pb.Puzzles.prototype.expandPuzzleHander_ = function(e) {
+  console.log('aff');
 };
 
 
@@ -113,17 +130,50 @@ pb.Puzzles.prototype.createNewPuzzleMap_ = function() {
   map.set('answer', this.doc_.getModel().createString());
   map.set('created', new Date());
   map.set('deleted', false);
-  map.set('docs', this.doc_.getModel().createList());
+  map.set('links', this.doc_.getModel().createList());
   map.set('hunters', this.doc_.getModel().createList());
-  map.set('modified', new Date());
   map.set('name', this.doc_.getModel().createString());
   map.set('needsHelp', false);
   map.set('notes', this.doc_.getModel().createString());
   map.set('solved', false);
-  map.set('url', this.doc_.getModel().createString());
 
   return map;
 }
+
+
+/**
+ * Produces a document fragment for a new puzzle.
+ *
+ * @return {!Node}
+ * @private
+ */
+pb.Puzzles.prototype.createPuzzleDom_ = function() {
+  var html = '';
+  html += '<section class="puzzle puzzle--collapse">';
+  html += '  <header>';
+  html += '    <input type="text" class="name"';
+  html += '           placeholder="Puzzle Name..." maxlength="128" disabled>';
+  html += '    <select class="status" disabled>';
+  html += '      <option value="new">New</option>';
+  html += '      <option value="underway">Underway</option>';
+  html += '      <option value="help">Needs Help</option>';
+  html += '      <option value="solved">Solved</option>';
+  html += '    </select>';
+  html += '    <span class="status-icon"></span>';
+  html += '  </header>';
+  html += '  <section>';
+  html += '    <input type="text" class="answer" placeholder="Answer...">';
+  html += '    <textarea class="notes" placeholder="Notes...">Notes</textarea>';
+  html += '    <ul class="links"></ul>';
+  html += '    <button class="add-link">Add link</button>';
+  html += '    <ul class="hunters"></ul>';
+  html += '    <button class="add-hunter">I am working on this</button>';
+  html += '    <div class="timestamp"><a href="#">Delete Puzzle</a></div>';
+  html += '  </section>';
+  html += '</section>';
+
+  return goog.dom.htmlToDocumentFragment(html);
+};
 
 
 /** Override */
