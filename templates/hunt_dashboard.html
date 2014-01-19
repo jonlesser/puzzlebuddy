@@ -10,36 +10,27 @@
       </form>
     </header>
     <section class="puzzle-list">
-      <div class="puzzle puzzle--expanded">
-        <textarea class="name">The Butter End.</textarea>
-        <label class="status">
-          <select>
-            <option>New</option>
-            <option>Underway</option>
-            <option>Needs Help</option>
-            <option>Solved</option>
+      <section class="puzzle puzzle--collapse">
+        <header>
+          <input type="text" class="name" placeholder="Puzzle Name" maxlength="128">
+          <select class="status">
+            <option value="new">New</option>
+            <option value="underway">Underway</option>
+            <option value="help">Needs Help</option>
+            <option value="solved">Solved</option>
           </select>
-        </label>
-        <div class="hunters">
-          Hunters: <span>2</span>
-        </div>
-        <div class="puzzle-details">
-          <textarea class="url">https://hunt.org/foo</textarea>
-          <textarea class="answer">Answer</textarea>
-          <textarea class="notes">Notes</textarea>
-          <ul>
-            <li><a href="#">Google Doc</a>
-          </ul>
-          <button class="add">Add doc</button>
-          <button class="delete">Delete</button>
-          <ul>
-            <li>hunter 1
-            <li>hunter 2
-          </ul>
-          <button class="addhunter">I'm working on this</button>
-          <div>Created 1/15/2015 at 14:59</div>
-        </div>
-      </div>
+          <span class="status-icon">2</span>
+        </header>
+        <section>
+          <input type="text" class="answer" placeholder="Answer">
+          <textarea class="notes" placeholder="Notes...">Notes</textarea>
+          <ul class="links"></ul>
+          <button class="add-link">Add link</button>
+          <ul class="hunters"></ul>
+          <button class="add-hunter">I'm working on this</button>
+          <div class="timestamp"><a href="#">Delete Puzzle</a></div>
+        </section>
+      </section>
     </section>
     <footer>
       <button class="puzzle-add">Add Puzzle</button>
@@ -73,7 +64,6 @@
 <div class="authorize">
   <button class="auth-button">Click to Authorize</button>
 </div>
-
 <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
 {% endblock %}
 {% block js_page_type %}hunt_dashboard{% endblock %}

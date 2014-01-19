@@ -17,6 +17,9 @@
 /**
  * Layout
  */
+* {
+  box-sizing: border-box;
+}
 body {
   background-color: #eee;
   font-family: 'Open Sans', sans-serif;
@@ -34,7 +37,7 @@ h1, h2, h3, h4, h5 {
   padding: 16px;
 }
 
-.section-wrapper{
+.section-wrapper {
   display: flex;
   height: 80vh;
 }
@@ -73,6 +76,17 @@ h1, h2, h3, h4, h5 {
   margin: 16px;
 }
 
+@media (max-width: 1000px) {
+  .section-wrapper {
+    height: auto;
+    flex-direction: column;
+  }
+  .section--messages,
+  .section--collaborators {
+    flex-basis: auto;
+  }
+}
+
 
 /**
  * Search forms.
@@ -105,11 +119,78 @@ h1, h2, h3, h4, h5 {
 
 
 /**
+ * pb.Puzzles
+ */
+.puzzle {
+  border-bottom: 1px solid #ccc;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.puzzle > header {
+  display: flex;
+  font-size: 18px;
+}
+
+.puzzle .name {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+.puzzle .status-icon {
+  border-left: 1px solid #ccc;
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-right: 16px;
+  width: 16px;
+  text-align: center;
+}
+
+.puzzle.puzzle--collapse .status {
+  -webkit-appearance: none;
+  background-color: #fff;
+  border: 0;
+  color: inherit;
+}
+
+.puzzle.puzzle--collapse .name {
+  color: inherit;
+  background-color: #fff;
+  border: 0;
+}
+
+
+.puzzle .answer {
+  border: 1px solid #ccc;
+  margin-bottom: 16px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.puzzle .notes {
+  display: block;
+  height: 160px;
+  border: 1px solid #ccc;
+  width: 100%;
+}
+
+.puzzle > section {
+  transition: height .5s ease;
+  overflow: hidden;
+}
+
+.puzzle.puzzle--collapse > section {
+  height: 0px;
+}
+
+/**
  * pb.Messages
  */
 .message-compose {
   border: 1px solid #ccc;
   padding: 8px;
+  width: 100%;
 }
 
 
