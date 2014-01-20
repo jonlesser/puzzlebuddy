@@ -953,4 +953,4 @@ goog.addDependency('../../../hunt_list.js', ['pb.HuntList'], ['goog.dom', 'goog.
 goog.addDependency('../../../index.js', ['pb.Index'], ['goog.dom', 'goog.ui.Component']);
 goog.addDependency('../../../main.js', ['pb.Page'], ['goog.dom', 'goog.ui.Component', 'pb.HuntDashboard', 'pb.HuntList', 'pb.Index']);
 goog.addDependency('../../../messages.js', ['pb.Messages'], ['goog.dom', 'goog.events.EventType', 'goog.ui.Component']);
-goog.addDependency('../../../puzzles.js', ['pb.Puzzles'], ['goog.dom', 'goog.events.EventType', 'goog.ui.Component']);
+goog.addDependency('../../../puzzles.js', ['pb.Puzzles'], ['goog.dom', 'goog.dom.classlist', 'goog.events.EventType', 'goog.ui.Component']);

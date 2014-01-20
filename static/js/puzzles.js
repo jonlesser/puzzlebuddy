@@ -1,6 +1,7 @@
 goog.provide('pb.Puzzles');
 
 goog.require('goog.dom');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.ui.Component');
 
@@ -34,7 +35,13 @@ goog.inherits(pb.Puzzles, goog.ui.Component);
  */
 pb.Puzzles.Class_ = {
   ADD: 'puzzle-add',
-  LIST: 'puzzle-list'
+  ANSWER: 'answer',
+  COLLAPSE: 'puzzle--collapse',
+  LIST: 'puzzle-list',
+  NAME: 'name',
+  NOTES: 'notes',
+  PUZZLE: 'puzzle',
+  STATUS: 'status'
 };
 
 
@@ -88,7 +95,25 @@ pb.Puzzles.prototype.addPuzzleEl_ = function(puzzleMap, index) {
   this.getHandler().listen(
       goog.dom.getFirstElementChild(el),
       goog.events.EventType.CLICK,
-      goog.bind(this.expandPuzzleHandler_, this));
+      goog.bind(this.expandPuzzleHandler_, this, el));
+
+  // Bind realtime strings.
+  gapi.drive.realtime.databinding.bindString(
+      puzzleMap.get('name'),
+      goog.dom.getElementByClass(pb.Puzzles.Class_.NAME, el));
+  gapi.drive.realtime.databinding.bindString(
+      puzzleMap.get('answer'),
+      goog.dom.getElementByClass(pb.Puzzles.Class_.ANSWER, el));
+  gapi.drive.realtime.databinding.bindString(
+      puzzleMap.get('notes'),
+      goog.dom.getElementByClass(pb.Puzzles.Class_.NOTES, el));
+
+  // Insert timestamp
+
+  // Listen for clicks on the delete button.
+
+  // Listen for status changes.
+
 
   // Insert the puzzle and scroll to the top.
   goog.dom.insertChildAt(listEl, el, index);
@@ -99,11 +124,27 @@ pb.Puzzles.prototype.addPuzzleEl_ = function(puzzleMap, index) {
 /**
  * Handles clicks on the puzzle element header.
  *
+ * @param {Node} el The element.
  * @param {goog.events.Event} e The click event.
  * @private
  */
-pb.Puzzles.prototype.expandPuzzleHander_ = function(e) {
-  console.log('aff');
+pb.Puzzles.prototype.expandPuzzleHandler_ = function(el, e) {
+  // Set up classes.
+  var open = this.getElementsByClass(pb.Puzzles.Class_.PUZZLE);
+  for (var i=0, puzzle; puzzle = open[i]; i++) {
+    goog.dom.classlist.add(puzzle, pb.Puzzles.Class_.COLLAPSE);
+    var status = goog.dom.getElementByClass(pb.Puzzles.Class_.STATUS, puzzle);
+    var name = goog.dom.getElementByClass(pb.Puzzles.Class_.NAME, puzzle);
+    status.disabled = true;
+    status.disabled = true;
+  }
+  
+  // Enable fields.
+  goog.dom.classlist.remove(el, pb.Puzzles.Class_.COLLAPSE);
+  var status = goog.dom.getElementByClass(pb.Puzzles.Class_.STATUS, el);
+  var name = goog.dom.getElementByClass(pb.Puzzles.Class_.NAME, el);
+  status.disabled = false;
+  name.disabled = false;
 };
 
 
@@ -127,15 +168,14 @@ pb.Puzzles.prototype.addPuzzleHander_ = function(e) {
  */
 pb.Puzzles.prototype.createNewPuzzleMap_ = function() {
   var map = this.doc_.getModel().createMap();
+  map.set('name', this.doc_.getModel().createString());
   map.set('answer', this.doc_.getModel().createString());
-  map.set('created', new Date());
-  map.set('deleted', false);
+  map.set('notes', this.doc_.getModel().createString());
   map.set('links', this.doc_.getModel().createList());
   map.set('hunters', this.doc_.getModel().createList());
-  map.set('name', this.doc_.getModel().createString());
-  map.set('needsHelp', false);
-  map.set('notes', this.doc_.getModel().createString());
-  map.set('solved', false);
+  map.set('status', 0);
+  map.set('deleted', false);
+  map.set('created', new Date());
 
   return map;
 }
@@ -154,16 +194,16 @@ pb.Puzzles.prototype.createPuzzleDom_ = function() {
   html += '    <input type="text" class="name"';
   html += '           placeholder="Puzzle Name..." maxlength="128" disabled>';
   html += '    <select class="status" disabled>';
-  html += '      <option value="new">New</option>';
-  html += '      <option value="underway">Underway</option>';
-  html += '      <option value="help">Needs Help</option>';
-  html += '      <option value="solved">Solved</option>';
+  html += '      <option value="0">New</option>';
+  html += '      <option value="1">Underway</option>';
+  html += '      <option value="2">Needs Help</option>';
+  html += '      <option value="3">Solved</option>';
   html += '    </select>';
   html += '    <span class="status-icon"></span>';
   html += '  </header>';
   html += '  <section>';
   html += '    <input type="text" class="answer" placeholder="Answer...">';
-  html += '    <textarea class="notes" placeholder="Notes...">Notes</textarea>';
+  html += '    <textarea class="notes" placeholder="Notes..."></textarea>';
   html += '    <ul class="links"></ul>';
   html += '    <button class="add-link">Add link</button>';
   html += '    <ul class="hunters"></ul>';

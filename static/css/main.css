@@ -123,8 +123,7 @@ h1, h2, h3, h4, h5 {
  */
 .puzzle {
   border-bottom: 1px solid #ccc;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding: 8px 16px 8px 0;
 }
 
 .puzzle > header {
@@ -134,8 +133,14 @@ h1, h2, h3, h4, h5 {
 
 .puzzle .name {
   flex-grow: 1;
-  border: 1px solid #ccc;
+  border: 0;
+  outline: 0;
   width: 100%;
+}
+
+.puzzle .status {
+  flex-shrink: 0;
+  font-size: 13px;
 }
 
 .puzzle .status-icon {
@@ -157,7 +162,6 @@ h1, h2, h3, h4, h5 {
 .puzzle.puzzle--collapse .name {
   color: inherit;
   background-color: #fff;
-  border: 0;
 }
 
 
