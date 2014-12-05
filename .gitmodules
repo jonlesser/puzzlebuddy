@@ -1,3 +1,6 @@
 [submodule "static/js/closure-library"]
 	path = static/js/closure-library
-	url = https://code.google.com/p/closure-library/
+	url = git@github.com:google/closure-library.git
+[submodule "static/js/closure-compiler"]
+	path = static/js/closure-compiler
+	url = git@github.com:google/closure-compiler.git
