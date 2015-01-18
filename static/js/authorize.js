@@ -107,6 +107,7 @@ pb.Authorize.prototype.authorizeCallback_ = function(authResult) {
   }
 
   this.dispatchEvent(pb.AuthorizeEventType.AUTHORIZED);
+  console.log("dispatched??");
   this.setVisible_(false);
 };
 
