@@ -1,6 +1,7 @@
 *.py[cod]
 credentials.dat
 client_secrets.json
+*.p12
 
 # Compiled source #
 ###################
