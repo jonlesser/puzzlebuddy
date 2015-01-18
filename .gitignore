@@ -2,6 +2,7 @@
 credentials.dat
 client_secrets.json
 *.p12
+*.pem
 
 # Compiled source #
 ###################

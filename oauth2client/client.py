@@ -26,6 +26,7 @@ import datetime
 import json
 import logging
 import os
+import socket
 import sys
 import time
 import six
@@ -89,6 +90,11 @@ ADC_HELP_MSG = (
 # The access token along with the seconds in which it expires.
 AccessTokenInfo = collections.namedtuple(
     'AccessTokenInfo', ['access_token', 'expires_in'])
+
+DEFAULT_ENV_NAME = 'UNKNOWN'
+class SETTINGS(object):
+  """Settings namespace for globally defined values."""
+  env_name = None
 
 
 class Error(Exception):
@@ -404,7 +410,9 @@ def clean_headers(headers):
   clean = {}
   try:
     for k, v in six.iteritems(headers):
-      clean[str(k)] = str(v)
+      clean_k = k if isinstance(k, bytes) else str(k).encode('ascii')
+      clean_v = v if isinstance(v, bytes) else str(v).encode('ascii')
+      clean[clean_k] = clean_v
   except UnicodeEncodeError:
     raise NonAsciiHeaderError(k + ': ' + v)
   return clean
@@ -492,13 +500,13 @@ class OAuth2Credentials(Credentials):
     it.
 
     Args:
-       http: An instance of httplib2.Http
-         or something that acts like it.
+       http: An instance of ``httplib2.Http`` or something that acts
+         like it.
 
     Returns:
        A modified instance of http that was passed in.
 
-    Example:
+    Example::
 
       h = httplib2.Http()
       h = credentials.authorize(h)
@@ -508,6 +516,7 @@ class OAuth2Credentials(Credentials):
     signing. So instead we have to overload 'request' with a closure
     that adds in the Authorization header and then calls the original
     version of 'request()'.
+
     """
     request_orig = http.request
 
@@ -852,7 +861,8 @@ class AccessTokenCredentials(OAuth2Credentials):
 
   AccessTokenCredentials objects may be safely pickled and unpickled.
 
-  Usage:
+  Usage::
+
     credentials = AccessTokenCredentials('<an access token>',
       'my-user-agent/1.0')
     http = httplib2.Http()
@@ -910,35 +920,60 @@ class AccessTokenCredentials(OAuth2Credentials):
     self._do_revoke(http_request, self.access_token)
 
 
-_env_name = None
+def _detect_gce_environment(urlopen=None):
+  """Determine if the current environment is Compute Engine.
+
+  Args:
+      urlopen: Optional argument. Function used to open a connection to a URL.
+
+  Returns:
+      Boolean indicating whether or not the current environment is Google
+          Compute Engine.
+  """
+  urlopen = urlopen or urllib.request.urlopen
+  # Note: the explicit `timeout` below is a workaround. The underlying
+  # issue is that resolving an unknown host on some networks will take
+  # 20-30 seconds; making this timeout short fixes the issue, but
+  # could lead to false negatives in the event that we are on GCE, but
+  # the metadata resolution was particularly slow. The latter case is
+  # "unlikely".
+  try:
+    response = urlopen('http://169.254.169.254/', timeout=1)
+    return response.info().get('Metadata-Flavor', '') == 'Google'
+  except socket.timeout:
+    logger.info('Timeout attempting to reach GCE metadata service.')
+    return False
+  except urllib.error.URLError as e:
+    if isinstance(getattr(e, 'reason', None), socket.timeout):
+      logger.info('Timeout attempting to reach GCE metadata service.')
+    return False
 
 
 def _get_environment(urlopen=None):
-  """Detect the environment the code is being run on."""
+  """Detect the environment the code is being run on.
 
-  global _env_name
+  Args:
+      urlopen: Optional argument. Function used to open a connection to a URL.
 
-  if _env_name:
-    return _env_name
+  Returns:
+      The value of SETTINGS.env_name after being set. If already
+          set, simply returns the value.
+  """
+  if SETTINGS.env_name is not None:
+    return SETTINGS.env_name
+
+  # None is an unset value, not the default.
+  SETTINGS.env_name = DEFAULT_ENV_NAME
 
   server_software = os.environ.get('SERVER_SOFTWARE', '')
   if server_software.startswith('Google App Engine/'):
-    _env_name = 'GAE_PRODUCTION'
+    SETTINGS.env_name = 'GAE_PRODUCTION'
   elif server_software.startswith('Development/'):
-    _env_name = 'GAE_LOCAL'
-  else:
-    try:
-      if urlopen is None:
-        urlopen = urllib.request.urlopen
-      response = urlopen('http://metadata.google.internal')
-      if any('Metadata-Flavor: Google' in h for h in response.info().headers):
-        _env_name = 'GCE_PRODUCTION'
-      else:
-        _env_name = 'UNKNOWN'
-    except urllib.error.URLError:
-      _env_name = 'UNKNOWN'
+    SETTINGS.env_name = 'GAE_LOCAL'
+  elif _detect_gce_environment(urlopen=urlopen):
+    SETTINGS.env_name = 'GCE_PRODUCTION'
 
-  return _env_name
+  return SETTINGS.env_name
 
 
 class GoogleCredentials(OAuth2Credentials):
@@ -952,37 +987,19 @@ class GoogleCredentials(OAuth2Credentials):
   Here is an example of how to use the Application Default Credentials for a
   service that requires authentication:
 
-  <code>
-  from __future__ import print_function  # unnecessary in python3
-  from googleapiclient.discovery import build
-  from oauth2client.client import GoogleCredentials
+      from googleapiclient.discovery import build
+      from oauth2client.client import GoogleCredentials
 
-  PROJECT = 'bamboo-machine-422'  # replace this with one of your projects
-  ZONE = 'us-central1-a'          # replace this with the zone you care about
+      credentials = GoogleCredentials.get_application_default()
+      service = build('compute', 'v1', credentials=credentials)
 
-  credentials = GoogleCredentials.get_application_default()
-  service = build('compute', 'v1', credentials=credentials)
+      PROJECT = 'bamboo-machine-422'
+      ZONE = 'us-central1-a'
+      request = service.instances().list(project=PROJECT, zone=ZONE)
+      response = request.execute()
 
-  request = service.instances().list(project=PROJECT, zone=ZONE)
-  response = request.execute()
-
-  print(response)
-  </code>
-
-  A service that does not require authentication does not need credentials
-  to be passed in:
-
-  <code>
-  from googleapiclient.discovery import build
-
-  service = build('discovery', 'v1')
-
-  request = service.apis().list()
-  response = request.execute()
-
-  print(response)
-  </code>
-  """
+      print(response)
+ """
 
   def __init__(self, access_token, client_id, client_secret, refresh_token,
                token_expiry, token_uri, user_agent,
@@ -1035,6 +1052,116 @@ class GoogleCredentials(OAuth2Credentials):
     }
 
   @staticmethod
+  def _implicit_credentials_from_gae(env_name=None):
+    """Attempts to get implicit credentials in Google App Engine env.
+
+    If the current environment is not detected as App Engine, returns None,
+    indicating no Google App Engine credentials can be detected from the
+    current environment.
+
+    Args:
+        env_name: String, indicating current environment.
+
+    Returns:
+        None, if not in GAE, else an appengine.AppAssertionCredentials object.
+    """
+    env_name = env_name or _get_environment()
+    if env_name not in ('GAE_PRODUCTION', 'GAE_LOCAL'):
+      return None
+
+    return _get_application_default_credential_GAE()
+
+  @staticmethod
+  def _implicit_credentials_from_gce(env_name=None):
+    """Attempts to get implicit credentials in Google Compute Engine env.
+
+    If the current environment is not detected as Compute Engine, returns None,
+    indicating no Google Compute Engine credentials can be detected from the
+    current environment.
+
+    Args:
+        env_name: String, indicating current environment.
+
+    Returns:
+        None, if not in GCE, else a gce.AppAssertionCredentials object.
+    """
+    env_name = env_name or _get_environment()
+    if env_name != 'GCE_PRODUCTION':
+      return None
+
+    return _get_application_default_credential_GCE()
+
+  @staticmethod
+  def _implicit_credentials_from_files(env_name=None):
+    """Attempts to get implicit credentials from local credential files.
+
+    First checks if the environment variable GOOGLE_APPLICATION_CREDENTIALS
+    is set with a filename and then falls back to a configuration file (the
+    "well known" file) associated with the 'gcloud' command line tool.
+
+    Args:
+        env_name: Unused argument.
+
+    Returns:
+        Credentials object associated with the GOOGLE_APPLICATION_CREDENTIALS
+            file or the "well known" file if either exist. If neither file is
+            define, returns None, indicating no credentials from a file can
+            detected from the current environment.
+    """
+    credentials_filename = _get_environment_variable_file()
+    if not credentials_filename:
+      credentials_filename = _get_well_known_file()
+      if os.path.isfile(credentials_filename):
+        extra_help = (' (produced automatically when running'
+                      ' "gcloud auth login" command)')
+      else:
+        credentials_filename = None
+    else:
+      extra_help = (' (pointed to by ' + GOOGLE_APPLICATION_CREDENTIALS +
+                    ' environment variable)')
+
+    if not credentials_filename:
+      return
+
+    try:
+      return _get_application_default_credential_from_file(credentials_filename)
+    except (ApplicationDefaultCredentialsError, ValueError) as error:
+      _raise_exception_for_reading_json(credentials_filename, extra_help, error)
+
+  @classmethod
+  def _get_implicit_credentials(cls):
+    """Gets credentials implicitly from the environment.
+
+    Checks environment in order of precedence:
+    - Google App Engine (production and testing)
+    - Environment variable GOOGLE_APPLICATION_CREDENTIALS pointing to
+      a file with stored credentials information.
+    - Stored "well known" file associated with `gcloud` command line tool.
+    - Google Compute Engine production environment.
+
+    Exceptions:
+      ApplicationDefaultCredentialsError: raised when the credentials fail
+          to be retrieved.
+    """
+    env_name = _get_environment()
+
+    # Environ checks (in order). Assumes each checker takes `env_name`
+    # as a kwarg.
+    environ_checkers = [
+      cls._implicit_credentials_from_gae,
+      cls._implicit_credentials_from_files,
+      cls._implicit_credentials_from_gce,
+    ]
+
+    for checker in environ_checkers:
+      credentials = checker(env_name=env_name)
+      if credentials is not None:
+        return credentials
+
+    # If no credentials, fail.
+    raise ApplicationDefaultCredentialsError(ADC_HELP_MSG)
+
+  @staticmethod
   def get_application_default():
     """Get the Application Default Credentials for the current environment.
 
@@ -1042,42 +1169,7 @@ class GoogleCredentials(OAuth2Credentials):
       ApplicationDefaultCredentialsError: raised when the credentials fail
                                           to be retrieved.
     """
-
-    env_name = _get_environment()
-
-    if env_name in ('GAE_PRODUCTION', 'GAE_LOCAL'):
-      # if we are running inside Google App Engine
-      # there is no need to look for credentials in local files
-      application_default_credential_filename = None
-      well_known_file = None
-    else:
-      application_default_credential_filename = _get_environment_variable_file()
-      well_known_file = _get_well_known_file()
-      if not os.path.isfile(well_known_file):
-        well_known_file = None
-
-    if application_default_credential_filename:
-      try:
-        return _get_application_default_credential_from_file(
-            application_default_credential_filename)
-      except (ApplicationDefaultCredentialsError, ValueError) as error:
-        extra_help = (' (pointed to by ' + GOOGLE_APPLICATION_CREDENTIALS +
-                      ' environment variable)')
-        _raise_exception_for_reading_json(
-            application_default_credential_filename, extra_help, error)
-    elif well_known_file:
-      try:
-        return _get_application_default_credential_from_file(well_known_file)
-      except (ApplicationDefaultCredentialsError, ValueError) as error:
-        extra_help = (' (produced automatically when running'
-                      ' "gcloud auth login" command)')
-        _raise_exception_for_reading_json(well_known_file, extra_help, error)
-    elif env_name in ('GAE_PRODUCTION', 'GAE_LOCAL'):
-      return _get_application_default_credential_GAE()
-    elif env_name == 'GCE_PRODUCTION':
-      return _get_application_default_credential_GCE()
-    else:
-      raise ApplicationDefaultCredentialsError(ADC_HELP_MSG)
+    return GoogleCredentials._get_implicit_credentials()
 
   @staticmethod
   def from_stream(credential_filename):
@@ -1174,16 +1266,14 @@ def _get_well_known_file():
   return default_config_path
 
 
-def _get_application_default_credential_from_file(
-    application_default_credential_filename):
+def _get_application_default_credential_from_file(filename):
   """Build the Application Default Credentials from file."""
 
   from oauth2client import service_account
 
   # read the credentials from the file
-  with open(application_default_credential_filename) as (
-      application_default_credential):
-    client_credentials = json.load(application_default_credential)
+  with open(filename) as file_obj:
+    client_credentials = json.load(file_obj)
 
   credentials_type = client_credentials.get('type')
   if credentials_type == AUTHORIZED_USER:
@@ -1467,12 +1557,15 @@ def _extract_id_token(id_token):
   Does the extraction w/o checking the signature.
 
   Args:
-    id_token: string, OAuth 2.0 id_token.
+    id_token: string or bytestring, OAuth 2.0 id_token.
 
   Returns:
     object, The deserialized JSON payload.
   """
-  segments = id_token.split('.')
+  if type(id_token) == bytes:
+    segments = id_token.split(b'.')
+  else:
+    segments = id_token.split(u'.')
 
   if len(segments) != 3:
     raise VerifyJwtTokenError(
@@ -1500,6 +1593,7 @@ def _parse_exchange_token_response(content):
   except Exception:
     # different JSON libs raise different exceptions,
     # so we just do a catch-all here
+    content = content.decode('utf-8')
     resp = dict(urllib.parse.parse_qsl(content))
 
   # some providers respond with 'expires', others with 'expires_in'
@@ -1522,7 +1616,7 @@ def credentials_from_code(client_id, client_secret, scope, code,
     client_id: string, client identifier.
     client_secret: string, client secret.
     scope: string or iterable of strings, scope(s) to request.
-    code: string, An authroization code, most likely passed down from
+    code: string, An authorization code, most likely passed down from
       the client
     redirect_uri: string, this is generally set to 'postmessage' to match the
       redirect_uri that the client specified
@@ -1606,8 +1700,8 @@ class DeviceFlowInfo(collections.namedtuple('DeviceFlowInfo', (
   def FromResponse(cls, response):
     """Create a DeviceFlowInfo from a server response.
 
-    The response should be a dict containing entries as described
-    here:
+    The response should be a dict containing entries as described here:
+
       http://tools.ietf.org/html/draft-ietf-oauth-v2-05#section-3.7.1
     """
     # device_code, user_code, and verification_url are required.

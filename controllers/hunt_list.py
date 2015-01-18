@@ -5,11 +5,11 @@ import os
 import re
 import webapp2
 
-from apiclient import discovery
+from googleapiclient import discovery
 from google.appengine.api import users
+from httplib2 import Http
 from models.models import Hunts
-from models.models import CredentialsModel
-from oauth2client.appengine import StorageByKeyName
+from oauth2client.client import SignedJwtAssertionCredentials
 
 
 class HuntListHandler(webapp2.RequestHandler):
@@ -46,11 +46,27 @@ class HuntListHandler(webapp2.RequestHandler):
       return
 
     # Setup a service object to talk to the Drive API.
-    credentials = StorageByKeyName(
-        CredentialsModel, 'cred_key', 'credentials').get()
+    scopes = [
+        'https://www.googleapis.com/auth/drive',
+        'https://www.googleapis.com/auth/drive.appdata',
+        'https://www.googleapis.com/auth/drive.apps.readonly',
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/drive.metadata.readonly',
+        'https://www.googleapis.com/auth/drive.readonly',
+        'https://www.googleapis.com/auth/drive.scripts',
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/userinfo.profile',
+    ]
+
+    client_email = '803173721883-jropsa1ir9p79tdemgot99qqh77clbmg@developer.gserviceaccount.com'
+    with open('puzzlebuddy-b7c415ad8eaf.pem') as f:
+      private_key = f.read()
+    credentials = SignedJwtAssertionCredentials(client_email, private_key, scopes)
+
     if credentials is None or credentials.invalid:
       logging.error('Puzbud credentials failed to load or were invalid')
-    http = credentials.authorize(http=httplib2.Http())
+    http = Http()
+    credentials.authorize(http)
     service = discovery.build('drive', 'v2', http=http)
 
     # Create a folder to be shared by the team and contain all docs.
