@@ -44,10 +44,13 @@ pb.Page.prototype.enterDocument = function() {
   switch (this.pageType_) {
     case pb.Page.PageTypes.INDEX:
       component = new pb.Index();
+      break;
     case pb.Page.PageTypes.HUNT_LIST:
       component = new pb.HuntList();
+      break;
     case pb.Page.PageTypes.HUNT_DASHBOARD:
       component = new pb.HuntDashboard();
+      break;
   }
 
   if (component) {

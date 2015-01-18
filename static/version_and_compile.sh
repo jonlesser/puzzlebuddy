@@ -8,7 +8,7 @@ mkdir compiled/$DATE
 git submodule foreach git pull
 
 python js/closure-library/closure/bin/build/depswriter.py \
-  --root_with_prefix=". ../../../" \
+  --root_with_prefix="js/ ../../../" \
   > js/deps.js
 
 # Compile JS.
